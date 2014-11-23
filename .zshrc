@@ -123,10 +123,6 @@ alias remove=pacman -Rs
 alias clip="tr -d '\n' | xsel --clipboard"
 #mount windows Partition
 alias mountwin='sudo mount /dev/sda2 /home/tobias/win'
-# print last phoneCalls
-alias incalls='python /home/tobias/Dropbox/myUni/Python/readTelephoneProtocolOut/printLastCalls.py'
-alias checkOTR='python /home/tobias/Dropbox/myUni/Python/otrChecker/compare.py /home/tobias/Videos/allVids.txt .'
-alias checkOTRself='python /home/tobias/Dropbox/myUni/Python/otrChecker/compare.py . .'
 
 #colored manual
 man() {
@@ -207,8 +203,6 @@ source /usr/share/doc/pkgfile/command-not-found.zsh
 #setopt correct
 
 #HASHES for z.B. ~nao
- nao=/home/angizia/repos/nao/naoTeamRepo/firmware_4.0
- ex=/home/angizia/repos/studium/yesod/referat/ex
 
 source /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 
