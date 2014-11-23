@@ -1,0 +1,190 @@
+# vim: ft=zsh 
+
+#TODO
+prompt_angizia () {
+  cat <<'EOF'
+	lala
+EOF
+}
+
+
+
+prompt_angizia_setup () {
+	######### Colour scheme
+	#source ~/.zsh/colors
+	######### Styles #################################################################
+	source ~/.zsh/styles
+	######### Some Symbols ###########################################################
+	source ~/.zsh/symbols
+	######### Some helpers ###########################################################
+	source ~/.zsh/helper_functions
+
+	######### Line One ###############################################################
+	# %n(x.a.b) returns a if n==x otherwise b 
+	# for ${(l:3::0:)?} look into man zshexpn
+	prompt_user=$(seperator "%n" "@" "%m")
+	#success=${style_success}${(l:3::0:)?}${prompt_return_sep}${prompt_ok}
+	# (l:3::0:)
+	#fail=${style_fail}${(l:3::0:)?}${prompt_return_sep}${prompt_error}
+	#prompt_helper='%0(?,${success},${fail})'
+	prompt_helper='%0(?,%B%F{'green'}${(l:3::0:)?},%{%B%F{'red'}${(l:3::0:)?})'
+	prompt_return=$(in_paren ${prompt_helper})
+#	prompt_line_1a=${style_seperator}${left_upper_curve}${prompt_return}
+	prompt_line_1a=${style_seperator}${left_upper_curve}${prompt_return}$(in_paren ${prompt_user})
+	prompt_line_1c=$(in_paren ${style_dir}"%~")
+#	local prompt_long_date=$(seperator "%D{%H:%M:%S}" "@" "%D{%d.%m}" "=" "%D{%a-%-b-%V}")
+	local prompt_long_date=$(seperator "%D{%a,%d-%m-%y_%H:%M:%S}" "@" "%D{%V.Woche}")
+	local prompt_short_date=$(seperator "%D{%H:%M_%d.%m}")
+	local prompt_jobs=$(seperator "Jobs:%j")
+	prompt_line_1d_long=$(in_paren ${prompt_jobs})$(in_paren ${prompt_long_date})${style_seperator}${filling_char}
+	prompt_line_1d_short=$(in_paren ${prompt_short_date})${style_seperator}${filling_char}
+	prompt_line_1d_mini=${style_seperator}"<"
+
+ 
+	######### Line Two ###############################################################
+	prompt_line_2=${style_seperator}${left_lower_curve}
+
+    ##################################################################################
+  	prompt_opts=(cr subst percent)
+	add-zsh-hook precmd prompt_angizia_precmd
+}
+
+
+
+
+
+#TODO
+prompt_angizia_get_vcs_info() {
+    ######### needed to show vcs info in the prompt
+	autoload -Uz vcs_info
+	vcs_info
+
+	source ~/.zsh/styles
+	source ~/.zsh/symbols
+
+	zstyle ':vcs_info:*' formats "%s %b"
+
+	repo=$(echo ${vcs_info_msg_0_} | sed 's/\ .*//')
+	branch=$(echo ${vcs_info_msg_0_} | sed 's/.*\ //')
+	prompt_line_1b=${style_vcs}${filling_char}"("${repo}")"${filling_char}"["${branch}"]"${filling_char}
+	prompt_line_1b_short=${style_vcs}${filling_char}"["${branch}"]"${filling_char}
+
+	prompt_line_1b_width=${#${(S%%)prompt_line_1b//(\%([KF1]|)\{*\}|\%[Bbkf])}}
+	if (( prompt_line_1b_width == 7 )); then
+		prompt_line_1b=""
+		prompt_line_1b_width=0
+	fi
+	prompt_line_1b_width_short=${#${(S%%)prompt_line_1b_short//(\%([KF1]|)\{*\}|\%[Bbkf])}}
+	if (( prompt_line_1b_width_short == 4 )); then
+		prompt_line_1b_short=""
+		prompt_line_1b_width_short=0
+	fi
+}
+#TODO
+prompt_angizia_precmd() {
+    # Colors
+	source ~/.zsh/colors
+    # Styles
+	source ~/.zsh/styles
+
+	setopt noxtrace localoptions extendedglob
+
+
+	local prompt_line_1
+	prompt_angizia_get_vcs_info
+	prompt_angizia_choose_prompt
+    
+
+	## normal prompt
+	local prompt_char=${style_prompt_char}"%(!.#.>)"
+	if (( COLUMNS < 15 )); then
+		PS1=${prompt_line_2}${prompt_char}" %b%f%k"
+	else
+		PS1=${prompt_line_1}${prompt_newline}${prompt_line_2}${prompt_char}" %b%f%k"
+	fi
+	## for multiline
+	prompt_change_to_pipe=%{$'\e[A\r'%}"%B${color_seperators}${pipe_char}─"%{$'\e[B'%}
+	PS2="${prompt_line_2}${prompt_change_to_pipe}${style_prompt_char}%_> %b%f%k"
+	PS3="${prompt_line_2}${style_prompt_char}?# %b%f%k"
+
+	zle_highlight[(r)default:*]="default:fg=${color_user_input},bold"
+}
+
+
+
+
+
+
+#TODO
+prompt_angizia_choose_prompt () {
+	source ~/.zsh/symbols
+	source ~/.zsh/styles
+	local error_code='%0(?,%B%F{$color_successful_command}${(l:3::0:)?}=>  OK,%{%B%F{$color_failed_command}${(l:3::0:)?}=>FAIL)'
+	local prompt_line_1a_width=${#${(S%%)prompt_line_1a//(\%([KF1]|)\{*\}|\%[Bbkf])}}
+	local prompt_line_error_width=${#${(S%%)error_code//(\%([KF1]|)\{*\}|\%[Bbkf])}}
+	local prompt_line_1c_width=${#${(S%%)prompt_line_1c//(\%([KF1]|)\{*\}|\%[Bbkf])}}
+	local prompt_line_1d_width_long=${#${(S%%)prompt_line_1d_long//(\%([KF1]|)\{*\}|\%[Bbkf])}}
+	local prompt_line_1d_width_short=${#${(S%%)prompt_line_1d_short//(\%([KF1]|)\{*\}|\%[Bbkf])}}
+	local prompt_line_1d_width_mini=${#${(S%%)prompt_line_1d_mini//(\%([KF1]|)\{*\}|\%[Bbkf])}}
+
+	# Try to fit in long path and user@host.
+	local prompt_padding_size=$(( COLUMNS
+                                  - prompt_line_1a_width
+                                  - prompt_line_1b_width
+                                  - prompt_line_1c_width
+                                  - prompt_line_1d_width_long ))
+	if (( prompt_padding_size > 0 )); then
+		local prompt_padding
+		eval "prompt_padding=\${(l:${prompt_padding_size}::${filling_char}:)}"
+		prompt_line_1=${prompt_line_1a}${prompt_line_1b}${prompt_line_1c}${style_padding}${prompt_padding}${prompt_line_1d_long}
+#		prompt_line_1=${prompt_line_1a}${error_code}${prompt_line_1b}${prompt_line_1c}${style_padding}${prompt_padding}${prompt_line_1d_long}
+		return
+	fi
+
+	# Didn't fit; try shorten date.
+	prompt_padding_size=$(( prompt_padding_size + prompt_line_1d_width_long -prompt_line_1d_width_short ))
+
+	if (( prompt_padding_size > 0 )); then
+		local prompt_padding
+		eval "prompt_padding=\${(l:${prompt_padding_size}::${filling_char}:)}"
+		prompt_line_1=${prompt_line_1a}${prompt_line_1b}${prompt_line_1c}${style_padding}${prompt_padding}${prompt_line_1d_short}
+		return
+	fi
+
+	# Didn't fit; try cut date...
+	prompt_padding_size=$(( prompt_padding_size + prompt_line_1d_width_short -prompt_line_1d_width_mini))
+
+	if (( prompt_padding_size > 0 )); then
+		local prompt_padding
+		eval "prompt_padding=\${(l:${prompt_padding_size}::${filling_char}:)}"
+		prompt_line_1=${prompt_line_1a}${prompt_line_1b}${prompt_line_1c}${style_padding}${prompt_padding}${prompt_line_1d_mini}
+		return
+	fi
+
+	# Shorten all and make linebreakes
+#	local to_take=$(( prompt_line_1c_width +prompt_padding_size -2))
+#	if (( to_take > 0 )); then
+	
+		local prompt_padding_size_a=$(( COLUMNS - prompt_line_1a_width - prompt_line_1d_width_mini))
+		local prompt_padding_a
+		eval "prompt_padding_a=\${(l:${prompt_padding_size_a}::${filling_char}:)}"
+		prompt_line_a="$prompt_line_1a${style_padding}${prompt_padding_a}${prompt_line_1d_mini}$prompt_newline"
+		local to_take_c=$(( COLUMNS - 4 ))
+		prompt_line_c=${style_seperator}${pipe_char}${filling_char}$(in_paren "$style_dir%$to_take_c<...<%~%<<")
+	
+		if (( prompt_line_1b_width == 0 )); then
+			prompt_line_1=$prompt_line_a$prompt_line_c
+		else 
+			if (( COLUMNS > prompt_line_1b_width )); then
+				prompt_line_b="${pipe_char}${filling_char}${style_vcs}(${repo})${filling_char}[${branch}]${prompt_newline}"
+			else
+				local to_take_b=$(( COLUMNS - 4 ))
+				prompt_line_b="${pipe_char}${filling_char}${style_vcs}[%$to_take_b<...<$branch%<<]$prompt_newline"
+			fi
+			prompt_line_1=$prompt_line_a$prompt_line_b$prompt_line_c
+		fi
+#		return
+#	fi
+}
+
+prompt_angizia_setup "$@"

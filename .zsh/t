@@ -1,0 +1,491 @@
+# angizia prompt theme derived from theme adam2
+#
+# here follow some zsh prompt coding manuals
+# note that some of there features only work in the prompt environment and wont work in the regular shell
+# more explanations are to be found in the functions
+#
+# ----Using escape sequences in prompts--------------------------------------------------
+#
+# One of the very simple yet key ideas behind customizing your prompt is
+# that there are many special 'escape' sequences that are used to specify
+# different kinds of information. Most of these sequences start with a
+# percent sign. (|%|) Then, within the PROMPT variable, any occurance of
+# these |%| sequences are replaced by the information that they represent.
+#
+# Some of these |%| escapes take an optional integer argument, which
+# should appear immediately after the |%|, and before the next character
+# of the escape sequence.
+#
+#
+#       List and description of escape sequences
+#
+# The |%| escapes are listed on the left. The information they are
+# replaced by is described on the right.
+#
+# *NOTE:* New escape sequences may be added in the future. Refer to the
+# man pages (|man zshmisc|) for the definitive list.
+#
+# *Literal characters*
+#
+# |%%|
+#     A %
+# |%)|
+#     A )
+#
+# *Directories*
+#
+# |%d|
+#     The current directory ($PWD)
+#
+# |%/|
+#     Same as |%d|
+#
+# |%~|
+#     $PWD, but will do two types of substitutions. If a named dir 'X' is
+#     a prefix of the current directory, then ~X is displayed. If the
+#     current directory is your home directory, $HOME, just ~ is displayed.
+#
+# |%c|
+#     Trailing component of $PWD. If you want n tailing componenets, put
+#     an interger 'n' after the |%|.
+#
+# |%.|
+#     Same as |%c|
+#
+# |%C|
+#     Just like |%c| and |%.| except that ~'s are never displayed in place
+#     of directory names.
+#
+# *Hostname info*
+#
+# |%M|
+#     The full machine hostname.
+#
+# |%m|
+#     The hostname up to the first |.| (dot). An integer may follow the
+#     |%| to specify how many components of the hostname are desired.
+#
+# *Current time info*
+#
+# |%t|
+#     Current time of day, in 12-hour, am/pm format.
+#
+# |%@|
+#     Same as |%t|
+#
+# |%T|
+#     Current time of day, in 24-hour format.
+#
+# |%*|
+#     Current time of day in 24-hour format, with seconds.
+#
+# *Current date info*
+#
+# |%w|
+#     The date in day-dd format.
+#
+# |%W|
+#     The date in mm/dd/yy format.
+#
+# |%D|
+#     The date in yy-mm-dd format.
+#
+# |%D{*string*}|
+#     string is formatted using the strftime function. See strftime(3) for
+#     more details. Three additional codes are available: %f prints the
+#     day of the month, like %e but without any preceding space if the day
+#     is a single digit, and %K/%L correspond to %k/%l for the hour of the
+#     day (24/12 hour clock) in the same way.
+#
+# *Miscellaneous info*
+#
+# |%h|
+#     Current history event number.
+#
+# |%!|
+#     Same as |%h|
+#
+# |%L|
+#     The current value of |$SHLVL|.
+#
+# |%n|
+#     Equivalent to |$USERNAME|.
+#
+# |%l|
+#     The line (tty) the user is logged in on.
+#
+# |%?|
+#     The return code of the last command executed just before the prompt.
+#
+# |%_|
+#     Print the state of the parser. More plainly, If you are in a for
+#     loop, |%_| is replaced with 'for'. If you are in a for loop inside
+#     of a while loop inside of an if statement, |%_| is replaced by 'if
+#     while for'
+#
+# |%E|
+#     Clears to end of line.
+#
+# |%#|
+#     A `#' if the shell is running with privileges, a `%' if not. The
+#     definition of privileged, for these purposes, is that either the
+#     effective user ID is zero, or, if POSIX.1e capabilities are
+#     supported, that at least one capability is raised in either the
+#     Effective or Inheritable capability vectors.
+#
+# |%v|
+#     The value of the first element of the psvar array parameter.
+#     Following the `%' with an integer gives that element of the array.
+#
+#
+#
+#
+# ----String function in zsh--------------------------------------
+#
+#
+#     ${#varName}
+#     count chars in string
+#     ex:
+#     		hund='katze'
+#     		echo ${#hund} # prints 5
+#
+#
+#     ${varName[beginIndex,endIndex]}
+#     creates substring
+#     ex:
+#     		hund='maus'
+#     		echo ${hund[1,999]} # prints aus
+#
+#
+#	  ${[varname]:-[string]}
+#	  returns the value of ${[varname]} normally, but uses [string] instead if ${[varname]} doesn't exist.
+#	  ${:-[string]} is a quick way to do variable-related things to fixed strings.
+#
+#      ${(l:N::C:)varName} is a way of formatted integer output
+#      N is the length of the string representation of the number represented by varName
+#      C is the filling char
+#      ex:
+#         hund=7
+#         echo ${(l:3::0:)hund} # prints 007
+#         echo ${(l:7::X:)hund} # prints XXXXXX7
+# 
+# -----Conditional Expressions in Prompts------------------------------------------------
+# 
+# In the zsh prompt, a conditional expression is simply an expression
+# whose value depends on some condition. You can use them in your prompt
+# to display useful information based on true/false tests.
+# 
+# To use a conditional expression in your prompt, use the following escape
+# sequence and syntax:
+# 
+# | %(X.true-text.false-text) |
+# 
+# The rest comes straight from the man page...
+# 
+#           Specifies a ternary expression.  The character  follow-
+#           ing  the  x is arbitrary; the same character is used to
+#           separate the text for the `true' result from  that  for
+#           the  `false'  result.  This separator may not appear in
+#           the true-text, except as part of a  %-escape  sequence.
+#           A  `)' may appear in the false-text as `%)'.  true-text
+#           and  false-text  may  both  contain  arbitrarily-nested
+#           escape  sequences,  including  further  ternary expres-
+#           sions.
+# 
+#           The left parenthesis may be preceded or followed  by  a
+#           positive  integer  n, which defaults to zero.  The test
+#           character x may be any of the following:
+# 
+#           c
+#           .
+#           ~    True if the current path, with prefix replacement,
+#                has at least n elements.
+#           /
+#           C    True if the current absolute path has at  least  n
+#                elements.
+#           t    True if the time in minutes is equal to n.
+#           T    True if the time in hours is equal to n.
+#           d    True if the day of the month is equal to n.
+#           D    True if the month is equal to n (January = 0).
+#           w    True if the day of the week is equal to n  (Sunday
+#                = 0).
+#           ?    True if the exit status of the last command was n.
+#           #    True if the effective uid of the  current  process
+#                is n.
+#           g    True if the effective gid of the  current  process
+#           L    True if the SHLVL parameter is at least n.
+#           S    True if the SECONDS parameter is at least n.
+#           v    True if the array psvar has at least n elements.
+#           _    True if at least n shell constructs were started.
+#           !    True if the shell is running with privileges.
+
+
+
+prompt_angizia () {
+}
+
+# is run once for every spawned shell
+prompt_angizia_setup () { 
+	autoload -Uz vcs_info # needed to show vcs info in the prompt
+
+	prompt_gfx_tlc='.'
+	prompt_gfx_mlc='|'
+	prompt_gfx_blc='\`'
+	prompt_gfx_hyphen='-'
+
+	# Colour scheme
+	# colours may not be local, it breaks the prompt TODO
+	color_continuation_info=${1:-'magenta'} # color of the stuff that %_ evaluates to on multiline prompt inputs
+	color_prompt_char=${1:-'white'}
+	color_successful_command=${1:-'green'}
+	color_failed_command=${1:-'red'}
+	color_dir=${1:-'yellow'}
+	color_topline_data=${1:-'cyan'}
+	color_topline_seperator=${1:-'cyan'}
+	color_user_input=${1:-'cyan'}
+	color_topline_brackets=${1:-'white'}
+	color_vcs=${1:-'magenta'}
+
+	# the lower case b in %b%F{$color_topline_data} means non bold
+	# the upper case b in %B%F{$color_topline_data} means bold
+	# local style_bold_hyphen style_dir style_vcs style_seperator # TODO move ? local ?
+	if [ $USER = 'root' ] ; then
+		color_hyphens=${1:-'red'}
+		style_hyphen='%B%F{$color_hyphens}'
+		style_bold_hyphen='%B%F{$color_hyphens}'
+	else
+		color_hyphens=${1:-'cyan'}
+		style_hyphen='%b%F{$color_hyphens}'
+		style_bold_hyphen='%B%F{$color_hyphens}'
+	fi
+	style_bracket='%B%F{$color_topline_brackets}'
+	style_data='%b%F{$color_topline_data}'
+	style_dir='%B%F{$color_dir}'
+	style_vcs='%B%F{$color_vcs}'
+	style_seperator='%B%F{$color_topline_seperator}'
+
+	local left_curve_lower left_curve_upper
+	# first two/three chars of the the upper and lower line of the ascii art curve:
+	#
+	# .-
+	# `--> 
+	#
+	left_curve_upper="${style_bold_hyphen}${prompt_gfx_tlc}${prompt_gfx_hyphen}"
+#	left_curve_lower="%{--%}"
+	left_curve_lower="${style_bold_hyphen}${prompt_gfx_blc}${prompt_gfx_hyphen}${prompt_gfx_hyphen}"
+
+
+	# by default the left curve looks like this:
+	#
+	# .-
+	# `--> 
+	#
+	# when typing an \ at the end of a line or using loops there will appear an line continuation in the ascci art curve
+	#
+	# .-
+	# |--> \
+	# |-> for i in 1 2 3 ; do
+	# |-for> while false ; do
+	# |-for while> true 
+	# |-for while> done
+	# `-for> done
+	#
+	# the lines beginning with | are described with left_curce_line_continuation
+	#
+	left_curce_line_continuation=$'%{\e[A\r'"%}%B%F{$color_hyphens}${prompt_gfx_mlc}${style_bold_hyphen}${prompt_gfx_hyphen}%{"$'\e[B%}' # huh?
+
+	left_bracket="$style_bracket("
+	right_bracket="$style_bracket)"
+
+	local prompt_date prompt_user_host
+	prompt_date="${style_data}%D{%H:%M}${style_seperator}@${style_data}%D{%d.%m}${style_seperator}=${style_data}%D{%a-%-b-%V}"
+	prompt_user_host="${style_data}%n${style_seperator}@${style_data}%m"
+
+	prompt_line_1_date_user_host="$left_bracket$prompt_date$right_bracket"
+	prompt_line_1_date_user_host_width=${#${(S%%)prompt_line_1_date_user_host//(\%([KF1]|)\{*\}|\%[Bbkf])}} # huh?
+	prompt_line_1_date_user_host_width=$(( $prompt_line_1_date_user_host_width - 7 )) # there is some kind of offset error with the length
+
+	local prompt_return_code
+	prompt_return_code='%0(?,%B%F{$color_successful_command}${(l:3::0:)?}=>  OK,%{%B%F{$color_failed_command}${(l:3::0:)?}=>FAIL)' # TODO one opening bracket too much, intentional?
+	prompt_line_1_curve_return_code="$left_curve_upper$left_bracket$prompt_return_code$right_bracket"
+
+	prompt_line_2="$left_curve_lower"
+
+	# the > char of the ascii art curve
+	#
+	# .-
+	# `--> 
+	#
+	# note that the > replaced by an X when you are root
+	#
+	prompt_char="%(!.#.>)"
+
+	prompt_opts=(cr subst percent) # TODO find out what prompt_opts does
+
+	add-zsh-hook precmd prompt_angizia_precmd
+}
+
+prompt_angizia_choose_prompt () {
+	local prompt_line_1_curve_return_code_width
+	prompt_line_1_curve_return_code_width=${#${(S%%)prompt_line_1_curve_return_code//(\%([KF1]|)\{*\}|\%[Bbkf])}} # huh?
+
+	local characters_left=$(( $COLUMNS - $prompt_line_1_curve_return_code_width )) 
+	local prompt_padding
+
+	# show at least the return code and ascii art curve
+	# is there not enough space to show the date and user/host info?
+	if [ $(( $characters_left - 2)) -lt $prompt_line_1_date_user_host_width ] ; then
+		# there is not enough space to show the date and user/host info
+		eval "prompt_padding=\${(l:${characters_left}::${prompt_gfx_hyphen}:)_empty_variable}"
+		prompt_line_1="$prompt_line_1_curve_return_code$style_hyphen$prompt_padding"
+		return 
+	fi
+
+	characters_left=$(( $characters_left - 1 - $prompt_line_1_date_user_host_width ))
+	vcs_info # read VCS info for the current dir
+	local prompt_line_1_vcs_info prompt_line_1_vcs_info_width
+	prompt_line_1_vcs_info=${vcs_info_msg_0_// /} # remove spaces
+	prompt_line_1_vcs_info_width=${#${(S%%)prompt_line_1_vcs_info//(\%([KF1]|)\{*\}|\%[Bbkf])}} # huh?
+
+	if [ $prompt_line_1_vcs_info_width -gt 0 ] ; then # is there any vcs info to display ?
+		# yes there is something to display, put a dash in front to it looks better
+		prompt_line_1_vcs_info="-${prompt_line_1_vcs_info}"
+		prompt_line_1_vcs_info_width=$(( $prompt_line_1_vcs_info_width + 1 ))
+
+		# there is enough space to show the return code, the ascii art curve, the date, and the user/host
+		# is there enough space to show the vcs info as well?
+		if [ $(( $characters_left - 2)) -lt $prompt_line_1_vcs_info_width ] ; then
+			# there is not enogh space to show the vcs info
+			eval "prompt_padding=\${(l:${characters_left}::${prompt_gfx_hyphen}:)_empty_variable}"
+			prompt_line_1="$prompt_line_1_curve_return_code$style_hyphen$prompt_padding$prompt_line_1_date_user_host"
+			return
+		fi
+		characters_left=$(( $characters_left - 1 - $prompt_line_1_vcs_info_width ))
+	fi
+
+	# there is enough space to show the return code, the ascii art curve, the date, the user/host, and the vcs info
+	# is there enough space to show the current directory as well?
+	if [ $(( $characters_left - 6)) -lt 0 ] ; then
+		# there is not enogh space to show the current directory
+		eval "prompt_padding=\${(l:${characters_left}::${prompt_gfx_hyphen}:)_empty_variable}"
+		prompt_line_1="$prompt_line_1_curve_return_code$style_vcs$prompt_line_1_vcs_info$style_hyphen$prompt_padding$prompt_line_1_date_user_host"
+		return
+	fi
+	
+	# %$PW_PWDLEN<...<%~%<<. When zsh encounters a prompt escape of the form %[num]<[str]<,
+	# it will truncate the next part of the prompt until the next %<< or the end of the prompt,
+	# whichever comes first. If truncation is necessary, zsh will remove the beginning of the
+	# string to be truncated and add the [str] supplied so that the entire resulting string
+	# will be [num] characters long.
+	# 
+	# (Note that there's also the %[num]>[str]> sequence, which does the truncation at the end of the string.)	
+	#
+	# ex:
+	#    %20<xXx<%~%<<
+	#		will evaluate to ~/Documents if you are in that dir
+	#		will evaluate to xXxpresentation_2010 if you are in a deep dir that ends with presentation_2010
+	#
+	
+	local prompt_line_1_dir prompt_line_1_dir_width max_length_for_dir dir_string
+	max_length_for_dir=$(( $characters_left - 6 ))
+	if [ $prompt_line_1_vcs_info_width -gt 0 ] ; then # is there any vcs info to display ?
+		prompt_line_1_dir="${bracket}$left_bracket${style_dir}%$max_length_for_dir<...<%~%<<$right_bracket"
+	else
+		prompt_line_1_dir="${style_bracket}-${bracket}$left_bracket${style_dir}%$max_length_for_dir<...<%~%<<$right_bracket"
+	fi
+	prompt_line_1_dir_width=${#${(S%%)prompt_line_1_dir//(\%([KF1]|)\{*\}|\%[Bbkf])}} # huh?
+	characters_left=$(( $characters_left - 1 - $prompt_line_1_dir_width ))
+	
+	eval "prompt_padding=\${(l:${characters_left}::${prompt_gfx_hyphen}:)_empty_variable}"
+	prompt_line_1="$prompt_line_1_curve_return_code$style_vcs$prompt_line_1_vcs_info$prompt_line_1_dir$style_hyphen$prompt_padding$prompt_line_1_date_user_host"
+	return
+}
+
+# is run once for every prompt line displayed, but not for line continuation
+prompt_angizia_precmd () {
+	setopt noxtrace localoptions extendedglob
+	local prompt_line_1
+
+	local style_continuation_info style_prompt_char
+	style_continuation_info='%B%F{$color_continuation_info}'
+	style_prompt_char='%B%F{$color_prompt_char}'
+
+	prompt_angizia_choose_prompt
+
+	# Here are some options and explanations extracted from the 'zshparam' man page:
+	# 
+	# PS1    The  primary prompt string, printed before a command is read; the default is "%m%# ". 
+	# 
+	#                       %d
+	#                       %/     Present working directory ($PWD).
+	#                       %M     The full machine hostname.
+	#                       %m     The hostname up to  the  first  '.'.
+	#                              An  integer  may  follow  the '%' to
+	#                              specify how many components  of  the
+	#                              hostname are desired.
+	#                       %@     Current  time  of  day,  in 12-hour,
+	#                              am/pm format.
+	#                       %T     Current time of day, in 24-hour for-
+	#                              mat.
+	#                       %*     Current  time of day in 24-hour for-
+	#                              mat, with seconds.
+	#                       %n     $USERNAME.
+	#                       %w     The date in day-dd format.
+	#                       %W     The date in mm/dd/yy format.
+	#                       %D     The date in yy-mm-dd format.
+	# 
+	# PS2    The secondary prompt, printed when the shell needs more information to  complete  
+	#        a  command.   Recognizes the same escape sequences as $PS1.  The default is "%_> ", 
+	#        which  displays  any  shell  constructs  or  quotation marks which are currently 
+	#        being processed.
+	# 
+	# PS3    Selection prompt used within a select  loop. Recognizes  the  same  escape  sequences
+	#        as $PS1.  The default is "?# ".
+	#
+	# select name [in list]
+	# do
+	#     statements that can use $name...
+	# done
+	# 
+	# This is the same syntax as for except for the keyword select. And like for, you can omit the in list and it will default to "$@", i.e., the list of quoted command-line arguments.
+	# 
+	# Here is what select does:
+	# 
+	#     * Generates a menu of each item in list, formatted with numbers for each choice
+	#     * Prompts the user for a number
+	#     * Stores the selected choice in the variable name and the selected number in the built-in variable REPLY
+	#     * Executes the statements in the body
+	#     * Repeats the process forever (but see below for how to exit)
+	# 
+	# Once again, an example should help make this process clearer. Assume you need to write the code for Task 5-4, but your life is not as simple. You don't have terminals hardwired to your computer; instead, your users communicate through a terminal server. This means, among other things, that the tty number does not determine the type of terminal.
+	# 
+	# Therefore, you have no choice but to prompt the user for his or her terminal type at login time. To do this, you can put the following code in /etc/profile (assume you have the same choice of terminal types):
+	# 
+	#     PS3='terminal? '
+	#     select term in gl35a t2000 s531 vt99; do
+	#         if [[ -n $term ]]; then
+	#             TERM=$term
+	#             print TERM is $TERM
+	#             break
+	#         else
+	#             print 'invalid.'
+	#         fi
+	#     done
+	# 
+	# If you run this code, you will see this menu:
+	# 
+	#     1) gl35a
+	#     2) t2000
+	#     3) s531
+	#     4) vt99
+	#     terminal?
+	# 
+	# PS4    The execution trace prompt.  Default  is  "+".
+
+	PS1="$prompt_line_1$prompt_newline$prompt_line_2${style_prompt_char}$prompt_char %b%f%k"
+	PS2="$prompt_line_2$left_curce_line_continuation${style_continuation_info}%_${style_prompt_char}$prompt_char %b%f%k"
+	PS3="$prompt_line_2$left_curce_line_continuation%B%F{white}?# %b%f%k"
+	zle_highlight[(r)default:*]="default:fg=$color_user_input,bold" # huh?
+}
+
+prompt_angizia_setup "$@"

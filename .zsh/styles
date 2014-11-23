@@ -1,0 +1,14 @@
+# vim: ft=zsh 
+source ~/.zsh/colors
+local style_data="%b%F{$color_data}"
+local style_dir="%B%F{$color_dir}"
+
+local style_success='%B%F{$color_successful_command}'
+local style_fail='%B%F{$color_fail_command}'
+
+local style_parenthesis="%B%F{$color_parenthesis}"
+local style_seperator="%B%F{$color_seperator}"
+local style_padding="%b%F{$color_seperator}"
+local style_prompt_char="%B%F{$color_prompt_char}"
+
+local style_vcs="%B%F{$color_vcs}"

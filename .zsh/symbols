@@ -1,0 +1,15 @@
+# vim: ft=zsh 
+
+local prompt_gfx_blc='\`'
+
+# for error-codes
+local prompt_return_sep="" #"|"
+local prompt_error="" #"\xE2\x9A\xA1"
+local prompt_ok="" #\xE2\x96\xA1"
+
+# for ascii-curve
+local filling_char=$(echo -e "\xe2\x94\x80")
+local left_upper_curve=$(echo -e "\xE2\x95\xAD")${filling_char}
+local left_lower_curve=$(echo -e "\xE2\x95\xB0")${filling_char}${filling_char}
+pipe_char=$(echo -e "\xE2\x94\x82")
+

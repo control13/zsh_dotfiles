@@ -1,0 +1,24 @@
+# vim: ft=zsh 
+in_paren () {
+	source ~/.zsh/styles
+	local prompt_l_paren="${style_parenthesis}("
+	local prompt_r_paren="${style_parenthesis})"
+	echo "${prompt_l_paren}"$1"${prompt_r_paren}"
+}
+seperator () {
+	source ~/.zsh/styles
+	local string=""
+	local cnt=0
+	for i do 
+		if [ $((cnt % 2)) -eq 0 ]; then
+			string=$string"${style_data}"$i
+		else
+			string=$string"${style_seperator}"$i
+		fi
+		cnt=$(( cnt + 1 ))
+	done
+	echo $string
+}
+ident () {
+	echo (l:3::0:)$1
+}

@@ -1,0 +1,10 @@
+# vim: ft=zsh 
+local color_parenthesis="white"
+local color_seperator="cyan"
+local color_dir="green"
+local color_data="cyan"
+local color_successful_command='green'
+local color_fail_command='red'
+local color_vcs="magenta"	
+local color_user_input="cyan"
+local color_prompt_char="white"
